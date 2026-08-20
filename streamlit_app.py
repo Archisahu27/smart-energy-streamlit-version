@@ -344,7 +344,9 @@ def run_prediction(form_data):
             'estimated_bill': estimated_bill,
             'breakdown': breakdown,
             'tips': tips,
-            'shap_explanation': shap_explanation
+            'shap_explanation': shap_explanation,
+            'weather': weather,
+            'city': form_data['city']
         }
         st.session_state.page = 'dashboard'
     st.rerun()
@@ -357,6 +359,17 @@ def show_dashboard():
         return
 
     st.subheader("📊 Your Energy Dashboard")
+
+    with st.container(border=True):
+        st.markdown(f"#### 🌤️ Live Weather Used for This Prediction — {result['city']}")
+        w = result['weather']
+        wc1, wc2, wc3, wc4, wc5 = st.columns(5)
+        wc1.metric("Avg Temp", f"{w['T2M']}°C")
+        wc2.metric("Max Temp", f"{w['T2M_MAX']}°C")
+        wc3.metric("Min Temp", f"{w['T2M_MIN']}°C")
+        wc4.metric("Rainfall", f"{w['PRECTOTCORR']} mm")
+        wc5.metric("Wind Speed", f"{w['WS2M']} m/s")
+        st.caption(f"Data source: {w['source']} — fetched live at prediction time")
 
     col1, col2 = st.columns(2)
     col1.metric("Predicted Next Month", f"{result['final_units']} units")
