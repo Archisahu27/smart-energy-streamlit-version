@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Energy Consumption Prediction and Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>⚡ SmartEnergy</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Sign Up</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h2>Predict. Explain. Save.</h2>
+        <p>AI-powered energy consumption prediction with real cost estimates and personalized recommendations to help you save on your electricity bill.</p>
+        <a href="{{ url_for('signup') }}" class="btn-primary">Get Started</a>
+    </section>
+
+    <section class="features">
+        <div class="card">
+            <div class="icon">📊</div>
+            <h3>Accurate Prediction</h3>
+            <p>Machine learning model predicts your next month's energy consumption based on your appliances and live weather data.</p>
+        </div>
+        <div class="card">
+            <div class="icon">💰</div>
+            <h3>Real Bill Estimate</h3>
+            <p>Get your estimated electricity bill based on official tariff slabs and your connection type.</p>
+        </div>
+        <div class="card">
+            <div class="icon">💡</div>
+            <h3>Smart Recommendations</h3>
+            <p>Personalized, actionable tips to reduce your consumption and save money every month.</p>
+        </div>
+    </section>
+
+</body>
+</html>

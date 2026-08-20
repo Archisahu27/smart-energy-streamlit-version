@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your History - SmartEnergy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>⚡ SmartEnergy</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('input_form') }}">New Prediction</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <h2 style="margin-bottom: 20px;">Your Prediction History</h2>
+
+        {% if predictions|length == 0 %}
+            <p>No predictions yet. <a href="{{ url_for('input_form') }}">Make your first prediction</a>.</p>
+        {% else %}
+            <div class="dashboard-section">
+                {% for p in predictions %}
+                <div class="breakdown-row">
+                    <span>{{ p.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    <span>{{ p.predicted_units }} units — ₹{{ p.estimated_bill }} ({{ p.connection_type }})</span>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

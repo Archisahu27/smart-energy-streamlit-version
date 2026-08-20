@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Energy Dashboard - SmartEnergy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>⚡ SmartEnergy</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('input_form') }}">New Prediction</a>
+            <a href="{{ url_for('history') }}">History</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+
+        <div class="summary-cards">
+            <div class="summary-card highlight">
+                <p class="card-label">Predicted Next Month</p>
+                <h2>{{ final_units }} units</h2>
+            </div>
+            <div class="summary-card">
+                <p class="card-label">Estimated Bill</p>
+                <h2>₹{{ estimated_bill }}</h2>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>📊 Appliance-wise Contribution</h3>
+            <div class="breakdown-list">
+                {% for appliance, units in breakdown.items() %}
+                    {% if units > 0 %}
+                    <div class="breakdown-row">
+                        <span>{{ appliance }}</span>
+                        <span>{{ units }} units/day</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>💡 Personalized Recommendations</h3>
+            <ul class="recommendation-list">
+                {% for tip in tips %}
+                    <li>{{ tip }}</li>
+                {% endfor %}
+            </ul>
+            <p style="font-size:12px; color:#64748B; margin-top:8px; font-style:italic;">
+                *Estimated savings are approximate, based on typical usage-reduction patterns for each appliance type, and an average tariff rate. Actual savings may vary.
+            </p>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>🔍 Why This Prediction? (Weather Impact)</h3>
+            <div class="breakdown-list">
+                {% for item in shap_explanation %}
+                    <div class="breakdown-row">
+                        <span>{{ item.sentence }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <p style="font-size:12px; color:#64748B; margin-top:8px; font-style:italic;">
+                *These values reflect the influence of weather factors on the ML model's raw output, which contributes as one component of the final prediction alongside your appliance data.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            *This is an estimated base energy bill calculated using standard tariff slabs.
+            Actual bills may vary due to additional charges such as duty and fuel adjustment costs,
+            which fluctuate periodically.
+        </p>
+
+    </div>
+
+</body>
+</html>
