@@ -48,8 +48,18 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password_hash TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS predictions
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, predicted_units REAL,
-                  estimated_bill REAL, connection_type TEXT, created_at TEXT,
-                  city TEXT, breakdown_json TEXT, weather_json TEXT)''')
+                  estimated_bill REAL, connection_type TEXT, created_at TEXT)''')
+
+    c.execute("PRAGMA table_info(predictions)")
+    existing_columns = [row[1] for row in c.fetchall()]
+
+    if 'city' not in existing_columns:
+        c.execute("ALTER TABLE predictions ADD COLUMN city TEXT")
+    if 'breakdown_json' not in existing_columns:
+        c.execute("ALTER TABLE predictions ADD COLUMN breakdown_json TEXT")
+    if 'weather_json' not in existing_columns:
+        c.execute("ALTER TABLE predictions ADD COLUMN weather_json TEXT")
+
     conn.commit()
     conn.close()
 
