@@ -48,7 +48,8 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password_hash TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS predictions
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, predicted_units REAL,
-                  estimated_bill REAL, connection_type TEXT, created_at TEXT)''')
+                  estimated_bill REAL, connection_type TEXT, created_at TEXT,
+                  city TEXT, breakdown_json TEXT, weather_json TEXT)''')
     conn.commit()
     conn.close()
 
@@ -82,18 +83,22 @@ def login_user(username, password):
         return True
     return False
 
-def save_prediction(username, units, bill, conn_type):
+def save_prediction(username, units, bill, conn_type, city, breakdown, weather):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    c.execute("INSERT INTO predictions (username, predicted_units, estimated_bill, connection_type, created_at) VALUES (?, ?, ?, ?, ?)",
-              (username, units, bill, conn_type, datetime.now().strftime('%Y-%m-%d %H:%M')))
+    c.execute("""INSERT INTO predictions 
+                 (username, predicted_units, estimated_bill, connection_type, created_at, city, breakdown_json, weather_json) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+              (username, units, bill, conn_type, datetime.now().strftime('%Y-%m-%d %H:%M'),
+               city, json.dumps(breakdown), json.dumps(weather)))
     conn.commit()
     conn.close()
 
 def get_history(username):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    c.execute("SELECT predicted_units, estimated_bill, connection_type, created_at FROM predictions WHERE username=? ORDER BY id DESC", (username,))
+    c.execute("""SELECT predicted_units, estimated_bill, connection_type, created_at, city, breakdown_json, weather_json 
+                 FROM predictions WHERE username=? ORDER BY id DESC""", (username,))
     result = c.fetchall()
     conn.close()
     return result
@@ -337,7 +342,8 @@ def run_prediction(form_data):
         print("DEBUG 8 - Estimated bill:", estimated_bill)
         print("="*60 + "\n")
 
-        save_prediction(st.session_state.username, round(final_monthly_units, 2), estimated_bill, form_data['connection_type'])
+        save_prediction(st.session_state.username, round(final_monthly_units, 2), estimated_bill,
+                         form_data['connection_type'], form_data['city'], breakdown, weather)
 
         st.session_state.result = {
             'final_units': round(final_monthly_units, 2),
@@ -397,8 +403,28 @@ def show_history():
     if not history:
         st.write("No predictions yet. Click 'New Prediction' to get started.")
     else:
-        for units, bill, conn_type, created_at in history:
-            st.write(f"**{created_at}** — {units} units — ₹{bill} ({conn_type})")
+        for units, bill, conn_type, created_at, city, breakdown_json, weather_json in history:
+            with st.container(border=True):
+                st.markdown(f"**{created_at}** — {city if city else 'Unknown City'} ({conn_type})")
+
+                col1, col2 = st.columns(2)
+                col1.metric("Predicted Units", f"{units} units")
+                col2.metric("Estimated Bill", f"₹{bill}")
+
+                if weather_json:
+                    weather = json.loads(weather_json)
+                    st.caption(
+                        f"🌤️ Weather: Avg {weather.get('T2M', '-')}°C | "
+                        f"Max {weather.get('T2M_MAX', '-')}°C | Min {weather.get('T2M_MIN', '-')}°C | "
+                        f"Rain {weather.get('PRECTOTCORR', '-')}mm | Wind {weather.get('WS2M', '-')}m/s"
+                    )
+
+                if breakdown_json:
+                    breakdown = json.loads(breakdown_json)
+                    active_appliances = {k: v for k, v in breakdown.items() if v > 0}
+                    if active_appliances:
+                        appliance_text = ", ".join([f"{k}: {v} units/day" for k, v in active_appliances.items()])
+                        st.caption(f"🔌 Appliances: {appliance_text}")
 
 if not st.session_state.logged_in:
     if st.session_state.page == 'signup':
